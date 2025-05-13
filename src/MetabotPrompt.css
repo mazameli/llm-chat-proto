@@ -1,0 +1,13 @@
+.prompt-stroke-animated {
+  stroke-dasharray: 500;
+  animation: prompt-stroke-animation 1.5s linear infinite;
+}
+
+@keyframes prompt-stroke-animation {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -1000;
+  }
+} 
