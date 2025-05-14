@@ -223,10 +223,9 @@ export default function SidePanel({
           </div>
         ) : (
           <div className="space-y-4">
-            {messages.map((message) => (
+            {messages.map((message, idx) => (
               <React.Fragment key={message.id}>
                 <div
-                  key={message.id}
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
@@ -251,33 +250,39 @@ export default function SidePanel({
                     )}
                   </div>
                 </div>
-                {hasSystemMessages && (
-                  <>
-                    <div className="flex items-center w-full mt-2" style={{ minHeight: 40 }}>
-                      <div className="relative w-8 h-8 flex-shrink-0">
-                        <img
-                          src={isLoading ? metabotLoadingSvg : metabotSvg}
-                          alt="Metabot"
-                          className="w-8 h-8"
-                        />
-                        {isLoading && (
-                          <div className="absolute inset-0">
-                            <DotLottieReact
-                              src="https://lottie.host/c63e8f0b-8e11-4788-9a34-a936a0930125/Wl1PMub97G.lottie"
-                              loop
-                              autoplay
-                              style={{ width: 32, height: 32 }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                      {!isLoading && (
-                        <span className="ml-2 text-xs text-gray-400 font-light whitespace-nowrap" style={{ marginLeft: 'auto' }}>
-                          Metabot isn't perfect. Double-check results.
-                        </span>
+                {/* Only render Metabot image/disclaimer after the last system message */}
+                {idx === (() => {
+                  for (let i = messages.length - 1; i >= 0; i--) {
+                    if (!messages[i].isUser) {
+                      return i;
+                    }
+                  }
+                  return -1;
+                })() && (
+                  <div className="flex items-center w-full mt-2" style={{ minHeight: 40 }}>
+                    <div className="relative w-8 h-8 flex-shrink-0">
+                      <img
+                        src={isLoading ? metabotLoadingSvg : metabotSvg}
+                        alt="Metabot"
+                        className="w-8 h-8"
+                      />
+                      {isLoading && (
+                        <div className="absolute inset-0">
+                          <DotLottieReact
+                            src="https://lottie.host/c63e8f0b-8e11-4788-9a34-a936a0930125/Wl1PMub97G.lottie"
+                            loop
+                            autoplay
+                            style={{ width: 32, height: 32 }}
+                          />
+                        </div>
                       )}
                     </div>
-                  </>
+                    {!isLoading && (
+                      <span className="ml-2 text-xs text-gray-400 font-light whitespace-nowrap" style={{ marginLeft: 'auto' }}>
+                        Metabot isn't perfect. Double-check results.
+                      </span>
+                    )}
+                  </div>
                 )}
               </React.Fragment>
             ))}
