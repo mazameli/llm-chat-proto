@@ -3,6 +3,9 @@ import MetabotPrompt, { MetabotPromptHandle } from './MetabotPrompt'
 import ReactMarkdown from 'react-markdown'
 import trashPng from './assets/trash.png'
 import copySvg from './assets/copy.svg'
+import metabotSvg from './assets/metabot.svg'
+import metabotLoadingSvg from './assets/metabot-loading.svg'
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 
 type Message = {
   id: string
@@ -39,9 +42,9 @@ The benchmark cleanups (April 4 and April 14) may have influenced the mid-April 
 The spikes in activity are closely tied to significant events like product launches, updates, and cleanups. Sustained growth may require strategies to maintain engagement post-event.`
 
 const metabotSuggestions = [
-  'Customers over time',
-  'Accounts in Europe',
   'Top performing products',
+  'Customers over time in the pacific northwest',
+  'Accounts in Europe that are still in trial',
 ]
 
 export default function SidePanel({ 
@@ -53,13 +56,13 @@ export default function SidePanel({
 }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [showLongChatWarning, setShowLongChatWarning] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const promptRef = useRef<MetabotPromptHandle>(null)
 
   useEffect(() => {
     if (initialQuery) {
-      setMessages([{ id: '1', content: initialQuery, isUser: true }])
       setTimeout(() => {
         promptRef.current?.triggerLoading(initialQuery)
       }, 0)
@@ -79,28 +82,38 @@ export default function SidePanel({
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, isLoading])
 
   // Listen for MetabotPrompt loading finish
   useEffect(() => {
     function onPromptLoaded() {
-      // Only add the response message if the last message doesn't contain analyze/explain
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage && !lastMessage.content.toLowerCase().includes('analyze') && !lastMessage.content.toLowerCase().includes('explain')) {
-        const newMessage: Message = {
-          id: Date.now().toString(),
-          content: "Here's the count of Customers by Created At in the last 3 months.",
-          isUser: false
+      // First remove the thinking message
+      setMessages(prev => {
+        const filtered = prev.filter(msg => msg.content !== "Thinking...");
+        // Only add the generic response if the last user message was not 'customers'
+        const lastUserMsg = [...filtered].reverse().find(msg => msg.isUser);
+        if (lastUserMsg && lastUserMsg.content.trim().toLowerCase() === 'customers') {
+          return filtered;
         }
-        setMessages(prev => [...prev, newMessage])
-      }
+        return [
+          ...filtered,
+          {
+            id: Date.now().toString(),
+            content: "Here's the count of Customers by Created At in the last 3 months.",
+            isUser: false
+          }
+        ];
+      });
+      // Finally update loading state
+      setIsLoading(false)
     }
     window.addEventListener('metabotPromptLoaded', onPromptLoaded)
     return () => window.removeEventListener('metabotPromptLoaded', onPromptLoaded)
-  }, [messages])
+  }, [])
 
   const clearChat = () => {
     setMessages([])
+    setIsLoading(false)
   }
 
   const addMessage = (content: string, isUser: boolean = true) => {
@@ -113,6 +126,14 @@ export default function SidePanel({
 
     // Only check for analyze/explain if this is a user message
     if (isUser && (content.toLowerCase().includes('analyze') || content.toLowerCase().includes('explain'))) {
+      setIsLoading(true);
+      // Add thinking message
+      const thinkingMessage: Message = {
+        id: Date.now().toString(),
+        content: "Thinking...",
+        isUser: false
+      };
+      setMessages(prev => [...prev, thinkingMessage]);
       // Add the analysis response after a delay
       setTimeout(() => {
         const analysisMessage: Message = {
@@ -120,11 +141,31 @@ export default function SidePanel({
           content: ANALYSIS_RESPONSE,
           isUser: false,
           isMarkdown: true
-        }
-        setMessages(prev => [...prev, analysisMessage])
-      }, 5000) // Match the loading delay
+        };
+        setMessages(prev => [...prev.filter(msg => msg.content !== "Thinking..."), analysisMessage]);
+        setIsLoading(false);
+      }, 5000);
+    } else if (isUser) {
+      // Start loading state
+      setIsLoading(true)
+      // Add thinking message
+      const thinkingMessage: Message = {
+        id: Date.now().toString(),
+        content: "Thinking...",
+        isUser: false
+      }
+      setMessages(prev => [...prev, thinkingMessage])
     }
   }
+
+  // Remove thinking message when loading is complete
+  useEffect(() => {
+    if (!isLoading) {
+      setMessages(prev => prev.filter(msg => msg.content !== "Thinking..."))
+    }
+  }, [isLoading])
+
+  const hasSystemMessages = messages.some((message: Message) => !message.isUser)
 
   return (
     <div className="h-full w-[480px] border-l border-gray-300 flex flex-col">
@@ -162,16 +203,16 @@ export default function SidePanel({
       >
         <div className="flex-1" />
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center flex-1 flex-col">
-            <span className="text-gray-400 text-sm text-center max-w-sm mb-6">
-              Try asking a question about a model or a metric, like<br />
-              <span className="italic">"how many customers do we have in the pacific northwest?"</span>
+          <div className="flex flex-col items-start w-full mb-6">
+            <span className="text-gray-400 text-sm mb-4">
+              Try asking a question about a model or a metric, like these.
             </span>
-            <div className="flex flex-row gap-2 mt-auto">
+            <div className="flex flex-col gap-2">
               {metabotSuggestions.map((s) => (
                 <span
                   key={s}
-                  className="inline-flex items-center px-2 py-1 text-xs bg-white rounded-md border border-gray-200 text-gray-700 font-medium cursor-pointer hover:bg-gray-100"
+                  className="inline-flex items-center px-2 py-1 text-xs bg-white rounded-md border border-gray-200 text-gray-700 font-medium cursor-pointer hover:bg-gray-100 self-start"
+                  style={{ width: 'auto' }}
                   onClick={() => promptRef.current?.setInputValue(s)}
                 >
                   {s}
@@ -191,20 +232,53 @@ export default function SidePanel({
                     message.isUser
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-100 text-gray-800'
-                  } ${message.isMarkdown ? 'prose prose-sm max-w-none' : ''}`}
+                  } ${message.isMarkdown ? 'prose prose-sm max-w-none' : ''} flex flex-col`}
                 >
                   {message.isMarkdown ? (
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   ) : (
-                    message.content
+                    message.content === "Thinking..." ? (
+                      <span className="shimmer-text">{message.content}</span>
+                    ) : (
+                      message.content
+                    )
                   )}
-                  {/* Copy icon for non-user messages */}
-                  {!message.isUser && (
+                  {/* Copy icon for all messages, excluding "Thinking..." */}
+                  {message.content !== "Thinking..." && (
                     <CopyButton content={message.content} />
                   )}
                 </div>
               </div>
             ))}
+            {/* Metabot image and disclaimer - only show after the last system message */}
+            {hasSystemMessages && (
+              <>
+                <div className="flex items-center w-full mt-2" style={{ minHeight: 40 }}>
+                  <div className="relative w-8 h-8 flex-shrink-0">
+                    <img
+                      src={isLoading ? metabotLoadingSvg : metabotSvg}
+                      alt="Metabot"
+                      className="w-8 h-8"
+                    />
+                    {isLoading && (
+                      <div className="absolute inset-0">
+                        <DotLottieReact
+                          src="https://lottie.host/c63e8f0b-8e11-4788-9a34-a936a0930125/Wl1PMub97G.lottie"
+                          loop
+                          autoplay
+                          style={{ width: 32, height: 32 }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  {!isLoading && (
+                    <span className="ml-2 text-xs text-gray-400 font-light whitespace-nowrap" style={{ marginLeft: 'auto' }}>
+                      Metabot isn't perfect. Double-check results.
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}
@@ -225,7 +299,15 @@ export default function SidePanel({
 
       {/* Prompt */}
       <div className="p-4 shrink-0">
-        <MetabotPrompt ref={promptRef} onClose={onClose} onMessageSubmit={addMessage} />
+        <MetabotPrompt
+          ref={promptRef}
+          onClose={onClose}
+          onMessageSubmit={addMessage}
+          onLoadingDone={() => {
+            setIsLoading(false);
+            setMessages(prev => prev.filter(msg => msg.content !== "Thinking..."));
+          }}
+        />
       </div>
     </div>
   )

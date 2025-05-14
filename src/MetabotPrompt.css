@@ -10,4 +10,24 @@
   to {
     stroke-dashoffset: -1000;
   }
+}
+
+.shimmer-text {
+  display: inline-block;
+  background: linear-gradient(90deg, #acb4c3 0%, #e0e7ef 40%, #a7b1c2 80%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 } 

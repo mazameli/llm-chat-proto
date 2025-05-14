@@ -1,7 +1,4 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
-import metabotSvg from './assets/metabot.svg'
-import metabotLoadingSvg from './assets/metabot-loading.svg'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import './MetabotPrompt.css'
 
 export type MetabotPromptHandle = {
@@ -11,9 +8,10 @@ export type MetabotPromptHandle = {
 
 const MetabotPrompt = forwardRef<MetabotPromptHandle, { 
   onClose: () => void, 
-  onMessageSubmit?: (content: string, isUser?: boolean) => void 
+  onMessageSubmit?: (content: string, isUser?: boolean) => void,
+  onLoadingDone?: () => void
 }>(
-  function MetabotPrompt({ onClose, onMessageSubmit }, ref) {
+  function MetabotPrompt({ onClose, onMessageSubmit, onLoadingDone }, ref) {
     const inputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(false)
     const [inputValue, setInputValue] = useState('')
@@ -34,10 +32,24 @@ const MetabotPrompt = forwardRef<MetabotPromptHandle, {
               inputRef.current?.focus();
             }, 0);
             onMessageSubmit?.('What exactly would you like to know about customers?', false)
+            if (onLoadingDone) onLoadingDone();
           }, 5000)
           return;
         }
         const isAnalyzeOrExplain = text.toLowerCase().includes('analyze') || text.toLowerCase().includes('explain')
+        if (isAnalyzeOrExplain) {
+          onMessageSubmit?.(text, true);
+          setLoading(true);
+          setTimeout(() => {
+            setLoading(false);
+            setInputValue('');
+            setTimeout(() => {
+              inputRef.current?.focus();
+            }, 0);
+            // No event dispatch, since SidePanel handles markdown response
+          }, 5000);
+          return;
+        }
         setLoading(true)
         setTimeout(() => {
           setLoading(false)
@@ -45,8 +57,8 @@ const MetabotPrompt = forwardRef<MetabotPromptHandle, {
           setTimeout(() => {
             inputRef.current?.focus();
           }, 0);
-          // Only dispatch the event if it's not an analyze/explain command
-          if (!isAnalyzeOrExplain) {
+          // Only dispatch the event if it's not an analyze/explain/customers command
+          if (!isAnalyzeOrExplain && text.trim().toLowerCase() !== 'customers') {
             window.dispatchEvent(new Event('metabotPromptLoaded'))
           }
         }, 5000)
@@ -79,6 +91,7 @@ const MetabotPrompt = forwardRef<MetabotPromptHandle, {
               inputRef.current?.focus();
             }, 0);
             onMessageSubmit?.('What exactly would you like to know about customers?', false)
+            if (onLoadingDone) onLoadingDone();
           }, 5000)
           return;
         }
@@ -103,87 +116,14 @@ const MetabotPrompt = forwardRef<MetabotPromptHandle, {
       <div
         className="relative"
         style={{
-          width: 480,
+          width: 464,
           height: 48,
-          borderRadius: 24,
+          borderRadius: 8,
           background: '#fff',
-          boxShadow: '0px 12px 24px rgba(0,0,0,0.2), 0px 0px 0px 1px rgba(0,0,0,0.05)',
+          boxShadow: '0px 12px 24px rgba(0,0,0,0.1), 0px 0px 0px 1px rgba(220,223,224,1)',
           overflow: 'visible',
         }}
       >
-        {/* Static SVG border */}
-        <svg
-          width={480}
-          height={48}
-          opacity={0.5}
-          viewBox="0 0 480 48"
-          fill="none"
-          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-        >
-          <rect
-            x={0.5}
-            y={0.5}
-            width={479}
-            height={47}
-            rx={23}
-            stroke="#E0E7EF"
-          />
-        </svg>
-        {/* Animated SVG border */}
-        <svg
-          width={480}
-          height={48}
-          viewBox="0 0 480 48"
-          fill="none"
-          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-        >
-          <defs>
-            <linearGradient id="prompt-border-gradient" x1="0" y1="24" x2="478" y2="24" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#2E96F1" />
-              <stop offset="1" stopColor="#D932F4" />
-            </linearGradient>
-          </defs>
-          <rect
-            x={0.5}
-            y={0.5}
-            width={479}
-            height={47}
-            rx={23}
-            stroke="url(#prompt-border-gradient)"
-            className={loading ? 'prompt-stroke-animated' : ''}
-            strokeWidth={1.5}
-            fill="none"
-          />
-        </svg>
-        {/* Icon */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 8,
-            left: 12,
-            width: 32,
-            height: 32,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <img
-            src={loading ? metabotLoadingSvg : metabotSvg}
-            alt="Metabot"
-            style={{ width: 32, height: 24, display: 'block' }}
-          />
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'none' }}>
-              <DotLottieReact
-                src="https://lottie.host/c63e8f0b-8e11-4788-9a34-a936a0930125/Wl1PMub97G.lottie"
-                loop
-                autoplay
-                style={{ width: 32, height: 24 }}
-              />
-            </div>
-          )}
-        </div>
         {/* Input */}
         <input
           ref={inputRef}
@@ -194,8 +134,8 @@ const MetabotPrompt = forwardRef<MetabotPromptHandle, {
             fontFamily: 'Lato, sans-serif',
             color: inputValue ? '#182731' : undefined,
             top: 6,
-            left: 52,
-            width: 300,
+            left: 12,
+            width: 340,
             height: 36,
             padding: 0,
             margin: 0,
