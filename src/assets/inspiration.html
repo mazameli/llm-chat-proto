@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Thinking Metabot</title>
+
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				position: relative;
+				display: flex;
+				flex-direction: row;
+				gap: 24px;
+				width: 100vw;
+				min-height: 100vh;
+				/* padding: 48px; */
+				background-color: #f5f5f5;
+				font-family: monospace;
+			}
+
+			h4 {
+				font-weight: 400;
+				text-align: center;
+			}
+
+			main {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				flex: 1;
+				background-color: black;
+				/* border: 1px solid black; */
+				/* border-radius: 24px; */
+				box-shadow: 0px 0px 0px 0.5px rgba(0, 0, 0, 0.1);
+				background-image: url('./img/bcg-home.jpg');
+				background-size: 1280px 747px;
+				background-repeat: no-repeat;
+				background-position: center bottom;
+			}
+
+			main.bcg_dashboard {
+				background-image: url('./img/bcg-dashboard.jpg');
+			}
+
+			main.bcg_bar {
+				background-image: url('./img/bcg-chart.jpg');
+			}
+
+			main.bcg_pie {
+				background-image: url('./img/bcg-pie.jpg');
+			}
+
+			main.bcg_table {
+				background-image: url('./img/bcg-table.jpg');
+			}
+
+			#input_wrapper {
+				display: block;
+				position: absolute;
+				width: 480px;
+				height: 48px;
+				/* left: 120px; */
+				/* bottom: 216px; */
+				bottom: 24px;
+				opacity: 0;
+				transform: scale(0.975);
+				overflow: visible;
+				transition: all 0.1s ease-in;
+			}
+
+			#input_wrapper.active {
+				transform: translateY(-8px) scale(1);
+				opacity: 1;
+			}
+
+			#input {
+				display: block;
+				position: relative;
+				width: 100%;
+				height: 100%;
+				border-radius: 24px;
+				background-color: #fff;
+				box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.2),
+					0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+
+				transition: all 0.1s ease-out;
+			}
+
+			#input.animated {
+				box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.2),
+					0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+			}
+
+			#stroke {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+			}
+
+			#stroke.animated {
+				stroke-dasharray: 500;
+				animation: stroke_animation 1.5s linear infinite;
+			}
+
+			#stroke_static {
+				position: absolute;
+				top: 10px;
+				left: 0px;
+			}
+
+			@keyframes stroke_animation {
+				from {
+					stroke-dashoffset: 0;
+				}
+				to {
+					stroke-dashoffset: -1000;
+				}
+			}
+
+			#metabot {
+				display: block;
+				position: absolute;
+				top: 8px;
+				left: 12px;
+				width: 32px;
+				height: 32px;
+				background-image: url('./img/metabot-s.png');
+				background-size: 100%;
+				background-repeat: no-repeat;
+			}
+
+			#metabot.thinking {
+				background-image: url('./img/metabot-s-thinking.png');
+			}
+
+			#text {
+				display: block;
+				position: absolute;
+				top: 6px;
+				left: 52px;
+				width: 300px;
+				height: 36px;
+				background-image: url('./img/prompt.gif');
+				background-size: 100%;
+				background-repeat: no-repeat;
+			}
+
+			#text.loading {
+				background-image: url('./img/disabled.png');
+			}
+
+			#close {
+				display: block;
+				position: absolute;
+				top: 12px;
+				right: 12px;
+			}
+
+			@keyframes bubbles_animation {
+				0% {
+					top: 0px;
+				}
+
+				30% {
+					top: 0px;
+				}
+
+				33% {
+					top: -26px;
+				}
+
+				60% {
+					top: -26px;
+				}
+
+				63% {
+					top: -52px;
+				}
+
+				90% {
+					top: -52px;
+				}
+
+				93% {
+					top: -78px;
+				}
+
+				100% {
+					top: -78px;
+				}
+			}
+
+			#instructions {
+				display: inline-block;
+				position: absolute;
+				bottom: 771px;
+				color: #ffffffa7;
+				line-height: 24px;
+				text-align: center;
+			}
+
+			#instructions .key {
+				display: inline-block;
+				background-color: #ffffff4c;
+				color: #ffffff;
+				height: 24px;
+				min-width: 24px;
+				padding: 0px 6px;
+				margin-right: 4px;
+				border-radius: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<div id="input_wrapper">
+				<div id="input">
+					<!-- STATIC STROKE start -->
+					<svg
+						width="480"
+						height="48"
+						opacity="0.5"
+						viewBox="0 0 480 48"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<rect
+							x="0.5"
+							y="0.5"
+							width="479"
+							height="47"
+							rx="22.5"
+							stroke="#2E96F1"
+						/>
+					</svg>
+					<!-- STATIC STROKE end -->
+
+					<!-- ANIMATED STROKE start -->
+					<svg
+						id="stroke"
+						width="480"
+						height="48"
+						viewBox="0 0 480 48"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<rect
+							x="0.5"
+							y="0.5"
+							width="479"
+							height="47"
+							rx="23"
+							stroke="url(#paint0_linear_2987_1942)"
+						/>
+						<defs>
+							<linearGradient
+								id="paint0_linear_2987_1942"
+								x1="0"
+								y1="23"
+								x2="478"
+								y2="23"
+								gradientUnits="userSpaceOnUse"
+							>
+								<stop stop-color="#2E96F1" />
+								<stop offset="1" stop-color="#D932F4" />
+							</linearGradient>
+						</defs>
+					</svg>
+					<!-- ANIMATED STROKE end -->
+
+					<div id="metabot"></div>
+					<div id="text"></div>
+
+					<!-- CLOSE start -->
+					<svg
+						id="close"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M8.53033 7.46967C8.23744 7.17678 7.76256 7.17678 7.46967 7.46967C7.17678 7.76256 7.17678 8.23744 7.46967 8.53033L10.9393 12L7.46967 15.4697C7.17678 15.7626 7.17678 16.2374 7.46967 16.5303C7.76256 16.8232 8.23744 16.8232 8.53033 16.5303L12 13.0607L15.4697 16.5303C15.7626 16.8232 16.2374 16.8232 16.5303 16.5303C16.8232 16.2374 16.8232 15.7626 16.5303 15.4697L13.0607 12L16.5303 8.53033C16.8232 8.23744 16.8232 7.76256 16.5303 7.46967C16.2374 7.17678 15.7626 7.17678 15.4697 7.46967L12 10.9393L8.53033 7.46967Z"
+							fill="#2F3C45"
+						/>
+					</svg>
+					<!-- CLOSE end -->
+				</div>
+			</div>
+
+			<p id="instructions">
+				<span class="key">⌘ + B</span> Toggle input,
+				<span class="key">Enter</span> Toggle animation,
+				<span class="key">1</span><span class="key">2</span
+				><span class="key">3</span><span class="key">4</span
+				><span class="key">5</span> Change background
+			</p>
+		</main>
+	</body>
+
+	<script>
+		let animation_playing = false
+		let input_visible = false
+
+		const main = document.getElementsByTagName('main')
+		const container = document.getElementById('container')
+		const input_wrapper = document.getElementById('input_wrapper')
+		const input = document.getElementById('input')
+		const stroke = document.getElementById('stroke')
+		const metabot = document.getElementById('metabot')
+		const text = document.getElementById('text')
+
+		// Cmd + B
+		document.addEventListener('keydown', (event) => {
+			if ((event.metaKey || event.ctrlKey) && event.key === 'b') {
+				event.preventDefault()
+
+				console.log('Cmd + B was pressed')
+
+				if (!input_visible) {
+					input_wrapper.classList.add('active')
+					input_visible = true
+				} else {
+					input_wrapper.classList.remove('active')
+					input_visible = false
+
+					input.classList.remove('animated')
+					stroke.classList.remove('animated')
+
+					text.classList.remove('loading')
+					animation_playing = false
+				}
+			}
+		})
+
+		// Enter
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				event.preventDefault()
+
+				console.log('Enter was pressed')
+
+				if (!animation_playing && input_visible) {
+					input.classList.add('animated')
+					stroke.classList.add('animated')
+					text.classList.add('loading')
+					metabot.classList.add('thinking')
+					animation_playing = true
+				} else {
+					input.classList.remove('animated')
+					stroke.classList.remove('animated')
+					text.classList.remove('loading')
+					metabot.classList.remove('thinking')
+					animation_playing = false
+				}
+			}
+		})
+
+		// 1
+		document.addEventListener('keydown', (event) => {
+			if (event.key === '1') {
+				event.preventDefault()
+				main[0].className = ''
+			}
+		})
+
+		// 2
+		document.addEventListener('keydown', (event) => {
+			if (event.key === '2') {
+				event.preventDefault()
+				main[0].className = ''
+				main[0].classList.add('bcg_dashboard')
+			}
+		})
+
+		// 3
+		document.addEventListener('keydown', (event) => {
+			if (event.key === '3') {
+				event.preventDefault()
+				main[0].className = ''
+				main[0].classList.add('bcg_bar')
+			}
+		})
+
+		// 4
+		document.addEventListener('keydown', (event) => {
+			if (event.key === '4') {
+				event.preventDefault()
+				main[0].className = ''
+				main[0].classList.add('bcg_pie')
+			}
+		})
+
+		// 5
+		document.addEventListener('keydown', (event) => {
+			if (event.key === '5') {
+				event.preventDefault()
+				main[0].className = ''
+				main[0].classList.add('bcg_table')
+			}
+		})
+	</script>
+</html>
