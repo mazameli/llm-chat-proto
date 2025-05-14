@@ -6,6 +6,7 @@ import copySvg from './assets/copy.svg'
 import metabotSvg from './assets/metabot.svg'
 import metabotLoadingSvg from './assets/metabot-loading.svg'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import React from 'react'
 
 type Message = {
   id: string
@@ -223,62 +224,63 @@ export default function SidePanel({
         ) : (
           <div className="space-y-4">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-              >
+              <React.Fragment key={message.id}>
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    message.isUser
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-800'
-                  } ${message.isMarkdown ? 'prose prose-sm max-w-none' : ''} flex flex-col`}
+                  key={message.id}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
-                  {message.isMarkdown ? (
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
-                  ) : (
-                    message.content === "Thinking..." ? (
-                      <span className="shimmer-text">{message.content}</span>
+                  <div
+                    className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                      message.isUser
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-800'
+                    } ${message.isMarkdown ? 'prose prose-sm max-w-none' : ''} flex flex-col`}
+                  >
+                    {message.isMarkdown ? (
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
                     ) : (
-                      message.content
-                    )
-                  )}
-                  {/* Copy icon for all messages, excluding "Thinking..." */}
-                  {message.content !== "Thinking..." && (
-                    <CopyButton content={message.content} />
-                  )}
-                </div>
-              </div>
-            ))}
-            {/* Metabot image and disclaimer - only show after the last system message */}
-            {hasSystemMessages && (
-              <>
-                <div className="flex items-center w-full mt-2" style={{ minHeight: 40 }}>
-                  <div className="relative w-8 h-8 flex-shrink-0">
-                    <img
-                      src={isLoading ? metabotLoadingSvg : metabotSvg}
-                      alt="Metabot"
-                      className="w-8 h-8"
-                    />
-                    {isLoading && (
-                      <div className="absolute inset-0">
-                        <DotLottieReact
-                          src="https://lottie.host/c63e8f0b-8e11-4788-9a34-a936a0930125/Wl1PMub97G.lottie"
-                          loop
-                          autoplay
-                          style={{ width: 32, height: 32 }}
-                        />
-                      </div>
+                      message.content === "Thinking..." ? (
+                        <span className="shimmer-text">{message.content}</span>
+                      ) : (
+                        message.content
+                      )
+                    )}
+                    {/* Copy icon for all messages, excluding "Thinking..." */}
+                    {message.content !== "Thinking..." && (
+                      <CopyButton content={message.content} />
                     )}
                   </div>
-                  {!isLoading && (
-                    <span className="ml-2 text-xs text-gray-400 font-light whitespace-nowrap" style={{ marginLeft: 'auto' }}>
-                      Metabot isn't perfect. Double-check results.
-                    </span>
-                  )}
                 </div>
-              </>
-            )}
+                {hasSystemMessages && (
+                  <>
+                    <div className="flex items-center w-full mt-2" style={{ minHeight: 40 }}>
+                      <div className="relative w-8 h-8 flex-shrink-0">
+                        <img
+                          src={isLoading ? metabotLoadingSvg : metabotSvg}
+                          alt="Metabot"
+                          className="w-8 h-8"
+                        />
+                        {isLoading && (
+                          <div className="absolute inset-0">
+                            <DotLottieReact
+                              src="https://lottie.host/c63e8f0b-8e11-4788-9a34-a936a0930125/Wl1PMub97G.lottie"
+                              loop
+                              autoplay
+                              style={{ width: 32, height: 32 }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      {!isLoading && (
+                        <span className="ml-2 text-xs text-gray-400 font-light whitespace-nowrap" style={{ marginLeft: 'auto' }}>
+                          Metabot isn't perfect. Double-check results.
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </React.Fragment>
+            ))}
             <div ref={messagesEndRef} />
           </div>
         )}
