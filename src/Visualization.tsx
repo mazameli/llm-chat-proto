@@ -1,5 +1,5 @@
 import { Line } from 'react-chartjs-2'
-import { useRef, useEffect, ForwardedRef } from 'react'
+import { useRef, useEffect } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,

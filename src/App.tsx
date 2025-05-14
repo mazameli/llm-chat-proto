@@ -8,8 +8,6 @@ import loadingSpinnerSvg from './assets/loading-spinner.png'
 import MetabotIcon from './assets/metabot_icon.svg'
 import type { MetabotPromptHandle } from './MetabotPrompt'
 
-type PromptSource = 'palette' | 'hotkey'
-
 function Spinner() {
   return (
     <div className="absolute inset-0 flex items-center justify-center z-50 bg-white bg-opacity-80">
@@ -131,7 +129,6 @@ function App() {
           className="h-full overflow-hidden"
         >
           <SidePanel
-            isOpen={sidePanelOpen}
             onClose={() => setSidePanelOpen(false)}
             initialQuery={metabotQuery || undefined}
           />
@@ -148,7 +145,6 @@ function App() {
         <MetabotPrompt
           ref={metabotPromptRef}
           onClose={() => setShowPrompt(false)}
-          source="palette"
         />
       )}
     </div>
