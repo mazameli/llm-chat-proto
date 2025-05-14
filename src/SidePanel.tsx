@@ -166,8 +166,6 @@ export default function SidePanel({
     }
   }, [isLoading])
 
-  const hasSystemMessages = messages.some((message: Message) => !message.isUser)
-
   return (
     <div className="h-full w-[480px] border-l border-gray-300 flex flex-col">
       {/* Header */}
