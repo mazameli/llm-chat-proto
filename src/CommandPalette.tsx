@@ -20,12 +20,6 @@ const actions = [
   { label: 'New dashboard', icon: '📊' },
 ]
 
-const paletteSections = [
-  { type: 'metabot', items: metabotSuggestions },
-  { type: 'recent', items: recentItems },
-  { type: 'actions', items: actions },
-]
-
 type PaletteItem =
   | { type: 'metabot', label: string }
   | { type: 'recent', label: string, desc: string }
@@ -105,8 +99,6 @@ export default function CommandPalette({ open, onClose, onMetabotAsk }: { open: 
   const recent = items.filter(i => i.type === 'recent')
   const acts = items.filter(i => i.type === 'actions')
 
-  let idx = 0
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-700 bg-opacity-60">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl mx-auto p-0 overflow-hidden">
@@ -152,10 +144,10 @@ export default function CommandPalette({ open, onClose, onMetabotAsk }: { open: 
           <div className="p-4">
             <div className="text-sm text-gray-500 mb-2">Recent items</div>
             <ul>
-              {recent.map((item, i) => (
+              {recent.map((item, idxRecent) => (
                 <li
                   key={item.label}
-                  className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer ${selected === i + 1 ? 'bg-blue-50' : ''}`}
+                  className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer ${selected === idxRecent + 1 ? 'bg-blue-50' : ''}`}
                 >
                   <span className="text-blue-400">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#60a5fa" strokeWidth="2"/></svg>
@@ -169,10 +161,10 @@ export default function CommandPalette({ open, onClose, onMetabotAsk }: { open: 
           <div className="p-4">
             <div className="text-sm text-gray-500 mb-2">Actions</div>
             <ul>
-              {acts.map((action, i) => (
+              {acts.map((action, idxActs) => (
                 <li
                   key={action.label}
-                  className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer ${selected === i + 1 + recent.length ? 'bg-blue-50' : ''}`}
+                  className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer ${selected === idxActs + 1 + recent.length ? 'bg-blue-50' : ''}`}
                 >
                   <span className="text-blue-400 text-lg">{action.icon}</span>
                   <span className="text-gray-800 text-sm font-medium">{action.label}</span>

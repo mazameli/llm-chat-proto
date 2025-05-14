@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import metabotSvg from './assets/metabot.svg'
 import metabotLoadingSvg from './assets/metabot-loading.svg'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
@@ -12,10 +11,9 @@ export type MetabotPromptHandle = {
 
 const MetabotPrompt = forwardRef<MetabotPromptHandle, { 
   onClose: () => void, 
-  source: 'palette' | 'hotkey',
   onMessageSubmit?: (content: string, isUser?: boolean) => void 
 }>(
-  function MetabotPrompt({ onClose, source, onMessageSubmit }, ref) {
+  function MetabotPrompt({ onClose, onMessageSubmit }, ref) {
     const inputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(false)
     const [inputValue, setInputValue] = useState('')

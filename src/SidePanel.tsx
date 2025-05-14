@@ -45,11 +45,9 @@ const metabotSuggestions = [
 ]
 
 export default function SidePanel({ 
-  isOpen, 
   onClose, 
   initialQuery 
 }: { 
-  isOpen: boolean
   onClose: () => void
   initialQuery?: string 
 }) {
@@ -70,7 +68,7 @@ export default function SidePanel({
 
   useEffect(() => {
     if (messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current
+      const { scrollHeight, clientHeight } = messagesContainerRef.current
       setShowLongChatWarning(scrollHeight > clientHeight)
     }
   }, [messages])
@@ -227,7 +225,7 @@ export default function SidePanel({
 
       {/* Prompt */}
       <div className="p-4 shrink-0">
-        <MetabotPrompt ref={promptRef} onClose={onClose} source="palette" onMessageSubmit={addMessage} />
+        <MetabotPrompt ref={promptRef} onClose={onClose} onMessageSubmit={addMessage} />
       </div>
     </div>
   )

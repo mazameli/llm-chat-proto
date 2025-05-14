@@ -19,10 +19,8 @@ function Spinner() {
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [showPrompt, setShowPrompt] = useState(false)
-  const [promptSource, setPromptSource] = useState<PromptSource>('palette')
   const [metabotQuery, setMetabotQuery] = useState<string | null>(null)
   const metabotPromptRef = useRef<MetabotPromptHandle | null>(null)
   const [showSpinner, setShowSpinner] = useState(false)
@@ -76,11 +74,6 @@ function App() {
     window.addEventListener('metabotPromptLoaded', onPromptLoaded)
     return () => window.removeEventListener('metabotPromptLoaded', onPromptLoaded)
   }, [])
-
-  const handleClick = () => {
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
-  }
 
   // Move this log outside of the return
   console.log('Rendering App. sidePanelOpen:', sidePanelOpen)
@@ -155,7 +148,7 @@ function App() {
         <MetabotPrompt
           ref={metabotPromptRef}
           onClose={() => setShowPrompt(false)}
-          source={promptSource}
+          source="palette"
         />
       )}
     </div>
