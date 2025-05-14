@@ -127,7 +127,7 @@ export default function CommandPalette({ open, onClose, onMetabotAsk }: { open: 
               </li>
             </ul>
             <div className="flex items-center gap-2 mt-2 mb-2">
-              {metabotChips.map((s, i) => (
+              {metabotChips.map((s) => (
                 <span
                   key={s.label}
                   className="inline-flex items-center px-2 py-1 text-xs bg-white rounded-md border border-gray-200 text-gray-700 font-medium cursor-pointer hover:bg-gray-100"
